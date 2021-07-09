@@ -10,6 +10,11 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   List<GameButton> buttonsList = [];
+  var player1;
+  var player2;
+  var activePlayer;
+  String displayOh = "O";
+  String displayEx = "X";
 
   @override
   void initState() {
@@ -18,6 +23,8 @@ class _HomeState extends State<Home> {
   }
 
   List<GameButton> doInit() {
+    player1 = [];
+    player2 = [];
     var gameButtons = <GameButton>[
       new GameButton(id: 1),
       new GameButton(id: 2),
@@ -32,8 +39,19 @@ class _HomeState extends State<Home> {
     return gameButtons;
   }
 
-  String displayOh = "O";
-  String displayEx = "X";
+  void playGame(GameButton gb) {
+    setState(() {
+      if (activePlayer == 1) {
+        gb.text = displayEx;
+        activePlayer = 2;
+        player1.add(gb.id);
+      } else {
+        gb.text = displayOh;
+        activePlayer = 2;
+        player2.add(gb.id);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
