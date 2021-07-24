@@ -28,6 +28,7 @@ class _HomeState extends State<Home> {
   }
 
   List<GameButton> doInit() {
+    activePlayer = 1;
     player1 = [];
     player2 = [];
     var gameButtons = <GameButton>[
@@ -52,10 +53,13 @@ class _HomeState extends State<Home> {
           gb.text = displayEx;
           activePlayer = 2;
           player1.add(gb.id);
-          GameButton button = autoPlay();
-          button.text = displayOh;
-          activePlayer = 1;
-          player2.add(button.id);
+          GameButton? button = autoPlay();
+          if (button != null) {
+            button.text = displayOh;
+            activePlayer = 1;
+            player2.add(button.id);
+            button.enabled = false;
+          }
         }
       } else {
         if (activePlayer == 1) {
@@ -73,20 +77,26 @@ class _HomeState extends State<Home> {
     });
   }
 
-  GameButton autoPlay() {
+  GameButton? autoPlay() {
     var emptyCells = [];
     var list = List.generate(9, (index) => index + 1);
+    print(list);
     for (var cellID in list) {
       if (!(player1.contains(cellID) || player2.contains(cellID))) {
         emptyCells.add(cellID);
       }
     }
-
-    var random = Random();
-    var randIndex = random.nextInt(emptyCells.length - 1);
-    var cellID = emptyCells[randIndex];
-    int i = buttonsList.indexWhere((element) => element.id == cellID);
-    return buttonsList[i];
+    print(emptyCells);
+    if (emptyCells.length > 0) {
+      var random = Random();
+      var randIndex = random.nextInt(emptyCells.length - 1);
+      print(randIndex);
+      var cellID = emptyCells[randIndex];
+      int i = buttonsList.indexWhere((element) => element.id == cellID);
+      print(emptyCells);
+      return buttonsList[i];
+    }
+    return null;
   }
 
   int checkWinner() {
