@@ -1,8 +1,13 @@
+import 'dart:math';
 import "package:flutter/material.dart";
 import 'package:tic_tac_toe/components/gameButton.dart';
 
 class Home extends StatefulWidget {
-  const Home({Key? key}) : super(key: key);
+  final bool isBot;
+  const Home({
+    Key? key,
+    required this.isBot,
+  }) : super(key: key);
 
   @override
   _HomeState createState() => _HomeState();
@@ -12,7 +17,7 @@ class _HomeState extends State<Home> {
   List<GameButton> buttonsList = [];
   var player1;
   var player2;
-  var activePlayer;
+  var activePlayer = 1;
   String displayOh = "O";
   String displayEx = "X";
 
@@ -40,38 +45,48 @@ class _HomeState extends State<Home> {
   }
 
   void playGame(GameButton gb) {
+    print("Active " + activePlayer.toString());
     setState(() {
-      if (activePlayer == 1) {
-        gb.text = displayEx;
-        activePlayer = 2;
-        player1.add(gb.id);
+      if (widget.isBot) {
+        if (activePlayer == 1) {
+          gb.text = displayEx;
+          activePlayer = 2;
+          player1.add(gb.id);
+          GameButton button = autoPlay();
+          button.text = displayOh;
+          activePlayer = 1;
+          player2.add(button.id);
+        }
       } else {
-        gb.text = displayOh;
-        activePlayer = 1;
-        player2.add(gb.id);
+        if (activePlayer == 1) {
+          gb.text = displayEx;
+          activePlayer = 2;
+          player1.add(gb.id);
+        } else {
+          gb.text = displayOh;
+          activePlayer = 1;
+          player2.add(gb.id);
+        }
       }
       gb.enabled = false;
       int winner = checkWinner();
-      if (buttonsList.every((element) => element.text != "")) {
-        showDialog(
-          context: context,
-          builder: (_) {
-            return AlertDialog(
-              title: Text("Game Draw"),
-              content: Text("Wanna Try Again!"),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    resetGame();
-                  },
-                  child: Text("Yes"),
-                ),
-              ],
-            );
-          },
-        );
-      }
     });
+  }
+
+  GameButton autoPlay() {
+    var emptyCells = [];
+    var list = List.generate(9, (index) => index + 1);
+    for (var cellID in list) {
+      if (!(player1.contains(cellID) || player2.contains(cellID))) {
+        emptyCells.add(cellID);
+      }
+    }
+
+    var random = Random();
+    var randIndex = random.nextInt(emptyCells.length - 1);
+    var cellID = emptyCells[randIndex];
+    int i = buttonsList.indexWhere((element) => element.id == cellID);
+    return buttonsList[i];
   }
 
   int checkWinner() {
@@ -140,6 +155,28 @@ class _HomeState extends State<Home> {
       winner = 2;
     }
 
+    if (winner == -1) {
+      if (buttonsList.every((element) => element.text != "")) {
+        showDialog(
+          context: context,
+          builder: (_) {
+            return AlertDialog(
+              title: Text("Game Draw"),
+              content: Text("Wanna Try Again!"),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    resetGame();
+                  },
+                  child: Text("Yes"),
+                ),
+              ],
+            );
+          },
+        );
+      }
+    }
+
     if (winner != -1) {
       if (winner == 1) {
         showDialog(
@@ -179,7 +216,13 @@ class _HomeState extends State<Home> {
         );
       }
     }
-    return -1;
+    return winner;
+  }
+
+  void btnReset() {
+    setState(() {
+      buttonsList = doInit();
+    });
   }
 
   void resetGame() {
@@ -194,7 +237,7 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[800],
+      backgroundColor: Colors.grey[900],
       appBar: AppBar(
         title: Text(
           "Tic Tac Toe",
@@ -235,7 +278,7 @@ class _HomeState extends State<Home> {
           ),
           ElevatedButton(
             onPressed: () {
-              resetGame();
+              btnReset();
             },
             child: Text(
               "Reset",
